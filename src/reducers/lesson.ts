@@ -1,28 +1,27 @@
 import { ILesson } from "../interfaces";
-import { IAction, IState } from "../interfaces/store";
-import { initialState } from "../store/initialState";
+import { createSlice } from "@reduxjs/toolkit";
+import { IState } from "../interfaces/store";
 
-export function lessonReducer(
-  state: IState = initialState,
-  { type, payload }: IAction
-) {
-  switch (type) {
-    case "ADD_LESSON":
-      return { ...state, lessons: [...state.lessons, payload] };
+export const lessonSlice = createSlice({
+  name: "lesson",
+  initialState: [],
+  reducers: {
+    addLesson: (
+      state: IState["lessons"],
+      action: { type: string; payload: ILesson }
+    ) => {
+      state.push(action.payload);
+    },
+    // @ts-ignore
+    addLessons: (
+      state: IState["lessons"],
+      action: { type: string; payload: ILesson[] }
+    ) => {
+      return state.concat(action.payload);
+    },
+  },
+});
 
-    case "ADD_STUDENT":
-      return {
-        ...state,
-        lessons: [
-          state.lessons.map((lesson: ILesson) =>
-            lesson.id === payload.lessonId
-              ? { ...lesson, students: [...lesson.students, payload.student] }
-              : lesson
-          ),
-        ],
-      };
+export const { addLesson, addLessons } = lessonSlice.actions;
 
-    default:
-      return state;
-  }
-}
+export default lessonSlice.reducer;

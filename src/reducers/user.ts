@@ -1,18 +1,22 @@
-import { IAction, IState } from "../interfaces/store";
-import { initialState } from "../store/initialState";
+import { createSlice } from "@reduxjs/toolkit";
+import { IUser } from "../interfaces";
 
-export default function userReducer(
-  state: IState = initialState,
-  { type, payload }: IAction
-) {
-  switch (type) {
-    case "LOG_IN_USER":
-      return { ...state, user: payload };
+export const userSlice = createSlice({
+  name: "user",
+  initialState: null,
+  reducers: {
+    login: (
+      state: IUser | null,
+      action: { type: string; payload: { id: string; email: string } }
+    ) => {
+      state = action.payload;
+    },
+    logout: (state: IUser | null) => {
+      state = null;
+    },
+  },
+});
 
-    case "LOG_OUT_USER":
-      return { ...state, user: null };
+export const { login } = userSlice.actions;
 
-    default:
-      return null;
-  }
-}
+export default userSlice.reducer;

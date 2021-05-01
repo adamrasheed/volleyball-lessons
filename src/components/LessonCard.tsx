@@ -40,6 +40,8 @@ const useStyles = makeStyles(() => ({
 export type LessonCardProps = {
   isCoach?: boolean;
   studentCount: number;
+  hideButton?: boolean;
+  children?: React.ReactNode;
 } & Omit<ILesson, "students" | "notes">;
 
 const LessonCard: React.FunctionComponent<LessonCardProps> = ({
@@ -48,6 +50,8 @@ const LessonCard: React.FunctionComponent<LessonCardProps> = ({
   startTime,
   studentCount,
   type,
+  hideButton = false,
+  children,
 }) => {
   const ReserveLink = React.forwardRef<any, Omit<RouterLinkProps, "to">>(
     (props, ref) => (
@@ -57,6 +61,7 @@ const LessonCard: React.FunctionComponent<LessonCardProps> = ({
 
   const classes = useStyles();
   const isFull = studentCount === 6;
+  const shouldShowButton = !hideButton;
   return (
     <Card className={classes.root}>
       <div className={classes.header}>
@@ -68,8 +73,9 @@ const LessonCard: React.FunctionComponent<LessonCardProps> = ({
       <Typography className={classes.time} variant="subtitle1">
         {format(new Date(startTime), "p")}
       </Typography>
+      {children}
       <CardActions className={classes.card_actions}>
-        {!isCoach && (
+        {shouldShowButton && (
           <Button
             variant="contained"
             color="primary"

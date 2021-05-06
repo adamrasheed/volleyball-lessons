@@ -1,6 +1,5 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { createStore, applyMiddleware, compose } from "redux";
 
 import firebase from "firebase/app";
 import "firebase/auth";
@@ -12,7 +11,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useParams,
+  Redirect,
 } from "react-router-dom";
 import { persistStore } from "redux-persist";
 
@@ -75,6 +74,7 @@ function App() {
                   <Switch>
                     <Route path={PATH.LESSON} component={LessonView} />
                     <Route path={PATH.ROOT} exact component={IndexView} />
+                    <Redirect to={PATH.ROOT} />
                   </Switch>
                 </main>
               </div>

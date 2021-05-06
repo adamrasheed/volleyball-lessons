@@ -1,11 +1,15 @@
 import firebase from "firebase";
+import { IUser } from "./user";
 
-export interface IUser {
-  id: firebase.User["uid"];
+type GoogleUser = {
+  uid: firebase.User["uid"];
   email: firebase.User["email"];
   token: firebase.User["refreshToken"];
   displayName: firebase.User["displayName"];
-  credential: firebase.auth.UserCredential["credential"];
   photoUrl?: firebase.User["photoURL"];
-  isCoach?: boolean;
-}
+  stsTokenManager: {
+    accessToken: string;
+  };
+};
+
+export interface IAuth extends GoogleUser {}

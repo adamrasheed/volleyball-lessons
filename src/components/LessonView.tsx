@@ -1,10 +1,14 @@
 import { useLocation, useRouteMatch } from "react-router-dom";
 import { RootStateOrAny, useSelector, useDispatch } from "react-redux";
-import { ILesson } from "../interfaces";
+import { ILesson, IStudent } from "../interfaces";
 import LessonCard from "./LessonCard";
-import { Button, Container, TextField, Typography } from "@material-ui/core";
+import { Button, Container, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import React, { useState } from "react";
+import React from "react";
+import { useFirebase } from "react-redux-firebase";
+import { loginUser } from "../reducers/user";
+import { addStudent } from "../reducers/lesson";
+import { IAuth } from "../interfaces/auth";
 
 const useStyles = makeStyles(() => ({
   form: {
@@ -22,25 +26,46 @@ export interface LessonViewProps {}
 const LessonView: React.FunctionComponent<LessonViewProps> = () => {
   const match = useRouteMatch();
   const classes = useStyles();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const fb = useFirebase();
+
+  const dispatch = useDispatch();
 
   const { isExact } = match;
   const lessons: ILesson[] = useSelector(
     (state: RootStateOrAny) => state.lessons
   );
+  const auth: IAuth = useSelector(
+    (state: RootStateOrAny) => state.firebase.auth
+  );
 
   const { pathname } = useLocation();
   const id = pathname.replace("/lesson/", "");
 
-  const currentLesson: ILesson | undefined = lessons.find(
+  const currentLesson: ILesson = lessons.find(
     (lesson) => lesson.id === id
-  );
-  console.log({ currentLesson });
+  ) as ILesson;
+
+  const isLoggedIn = !!auth.stsTokenManager.accessToken;
+  console.log({ currentLesson, isLoggedIn });
 
   function handleSubmitForm(e: React.FormEvent) {
     e.preventDefault();
-    console.log({ name, email });
+    dispatch(loginUser(fb.login));
+  }
+
+  function handleAddStudent() {
+    if (isLoggedIn) {
+      const { email, displayName, uid } = auth;
+      const student: IStudent = {
+        id: uid,
+        email,
+        realName: displayName,
+        phone: null,
+        timesPlayed: 0,
+      };
+
+      dispatch(addStudent({ lessonId: currentLesson.id, student }));
+    }
   }
 
   if (isExact || !currentLesson) {
@@ -57,36 +82,34 @@ const LessonView: React.FunctionComponent<LessonViewProps> = () => {
         >
           <Typography variant="h5">Students</Typography>
           {currentLesson.students.map((student) => (
-            <Typography variant="body2">{student.realName}</Typography>
+            <Typography key={student.id} variant="body2">
+              {student.realName}
+            </Typography>
           ))}
         </LessonCard>
-        <Container
-          onSubmit={handleSubmitForm}
-          className={classes.form}
-          component="form"
-        >
-          <Typography variant="h5">Book this game</Typography>
-          <TextField
-            required
-            variant="outlined"
-            label="Name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <TextField
-            required
-            variant="outlined"
-            label="Email"
-            name="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Button type="submit" variant="contained" color="primary" fullWidth>
-            Submit
-          </Button>
-        </Container>
+        {isLoggedIn && (
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddStudent}
+            >
+              Add my name
+            </Button>
+          </div>
+        )}
+        {!isLoggedIn && (
+          <Container
+            onSubmit={handleSubmitForm}
+            className={classes.form}
+            component="form"
+          >
+            <Typography variant="h5">Book this game</Typography>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Sign Up with Google
+            </Button>
+          </Container>
+        )}
       </div>
     );
   }
